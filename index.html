@@ -1,0 +1,611 @@
+<title>商品開発管理</title>
+<link rel="icon" href="favicon-32.png" sizes="32x32">
+<link rel="icon" href="icon.svg" type="image/svg+xml">
+<link rel="apple-touch-icon" href="icon.svg">
+<link rel="manifest" href="site.webmanifest">
+<meta name="theme-color" content="#9c4a2f">
+<style>
+  :root{
+    --paper:#f6f2ea; --surface:#fffdf8; --surface-2:#f1ebe0;
+    --ink:#26221c; --ink-soft:#4e4740; --muted:#857b6e; --faint:#a89e8f;
+    --line:#e6ded0; --line-strong:#d6cbb9;
+    --accent:#9c4a2f; --accent-ink:#7d3a24; --accent-soft:#f0e0d6;
+    --ok:#3f7a4e; --ok-bg:#e2efe2; --warn:#a9791f; --warn-bg:#f7ead0;
+    --bad:#a5443a; --bad-bg:#f3ddd7; --slate:#3f6b86; --slate-bg:#e0eaf0;
+    --neutral:#6f665b; --neutral-bg:#ebe4d8;
+    --p2:#b4443a; --p3:#c1743a; --p4:#4f8a6b; --p6:#8a8078;
+    --shadow:0 1px 2px rgba(40,32,22,.06),0 8px 24px rgba(40,32,22,.07);
+    --shadow-lg:0 12px 40px rgba(40,32,22,.16);
+    --radius:12px; --radius-sm:8px;
+    --jp:"Hiragino Kaku Gothic ProN","Hiragino Sans","BIZ UDPGothic","Yu Gothic Medium","Yu Gothic","Meiryo",system-ui,sans-serif;
+  }
+  /* 既定は常に白ベース。ダークは🌙ボタン（data-theme="dark"）時のみ */
+  :root[data-theme="dark"]{
+    --paper:#1e1a15; --surface:#282219; --surface-2:#2f2820;
+    --ink:#ece4d6; --ink-soft:#ccc2b2; --muted:#9a8f7f; --faint:#736a5d;
+    --line:#39322a; --line-strong:#463d33;
+    --accent:#df8460; --accent-ink:#eda07f; --accent-soft:#3a2a22;
+    --ok:#7fc08d; --ok-bg:#26362a; --warn:#e0b45f; --warn-bg:#38301f;
+    --bad:#e28a7e; --bad-bg:#3a2723; --slate:#7fb0cc; --slate-bg:#22303a;
+    --neutral:#b3a898; --neutral-bg:#332c23;
+    --p2:#d96257; --p3:#dc9058; --p4:#6faf8b; --p6:#a89e92;
+    --shadow:0 1px 2px rgba(0,0,0,.3),0 8px 24px rgba(0,0,0,.28);
+    --shadow-lg:0 14px 44px rgba(0,0,0,.5);
+  }
+  :root[data-theme="light"]{
+    --paper:#f6f2ea; --surface:#fffdf8; --surface-2:#f1ebe0;
+    --ink:#26221c; --ink-soft:#4e4740; --muted:#857b6e; --faint:#a89e8f;
+    --line:#e6ded0; --line-strong:#d6cbb9;
+    --accent:#9c4a2f; --accent-ink:#7d3a24; --accent-soft:#f0e0d6;
+    --ok:#3f7a4e; --ok-bg:#e2efe2; --warn:#a9791f; --warn-bg:#f7ead0;
+    --bad:#a5443a; --bad-bg:#f3ddd7; --slate:#3f6b86; --slate-bg:#e0eaf0;
+    --neutral:#6f665b; --neutral-bg:#ebe4d8;
+    --p2:#b4443a; --p3:#c1743a; --p4:#4f8a6b; --p6:#8a8078;
+  }
+
+  *{box-sizing:border-box}
+  html,body{margin:0}
+  body{background:var(--paper); color:var(--ink); font-family:var(--jp); font-size:15px; line-height:1.6; -webkit-font-smoothing:antialiased; font-feature-settings:"palt" 1;}
+  .wrap{max-width:1320px; margin:0 auto; padding:0 20px 80px}
+  button{font-family:inherit; cursor:pointer}
+  ::selection{background:var(--accent-soft)}
+
+  header.top{position:sticky; top:0; z-index:40; background:color-mix(in srgb,var(--paper) 88%, transparent); backdrop-filter:saturate(1.2) blur(10px); border-bottom:1px solid var(--line);}
+  .top-in{max-width:1320px; margin:0 auto; padding:14px 20px; display:flex; align-items:center; gap:18px; flex-wrap:wrap}
+  .brand{display:flex; align-items:baseline; gap:12px; margin-right:auto}
+  .mark{font-size:20px; font-weight:800; letter-spacing:.04em; display:flex; align-items:center; gap:10px}
+  .mark .appicon{width:30px; height:30px; border-radius:8px; flex:none; box-shadow:0 1px 3px rgba(40,32,22,.18); background:#fff}
+  .brand .sub{font-size:12px; color:var(--muted)}
+  .top-actions{display:flex; gap:8px; align-items:center; flex-wrap:wrap}
+  .btn{border:1px solid var(--line-strong); background:var(--surface); color:var(--ink-soft); padding:8px 13px; border-radius:var(--radius-sm); font-size:13px; font-weight:600; display:inline-flex; align-items:center; gap:6px; transition:.15s; white-space:nowrap}
+  .btn:hover{border-color:var(--accent); color:var(--accent)}
+  .btn.primary{background:var(--accent); border-color:var(--accent); color:#fff}
+  .btn.primary:hover{filter:brightness(1.06); color:#fff}
+  .btn.ghost{border-color:transparent; background:transparent}
+  .btn.ghost:hover{background:var(--surface-2); color:var(--ink)}
+  .icon{width:15px;height:15px;stroke:currentColor;fill:none;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
+
+  .kpis{display:grid; grid-template-columns:repeat(6,1fr); gap:12px; margin:22px 0 18px}
+  .kpi{background:var(--surface); border:1px solid var(--line); border-radius:var(--radius); padding:13px 15px; box-shadow:var(--shadow); position:relative; overflow:hidden}
+  .kpi .num{font-size:27px; font-weight:800; line-height:1.1; font-variant-numeric:tabular-nums}
+  .kpi .lbl{font-size:11.5px; color:var(--muted); margin-top:3px; font-weight:600}
+  .kpi::after{content:""; position:absolute; left:0; top:0; bottom:0; width:3px; background:var(--k,var(--accent))}
+
+  .toolbar{display:flex; align-items:center; gap:14px; flex-wrap:wrap; margin-bottom:16px}
+  .tabs{display:inline-flex; gap:9px; background:transparent; border:none; padding:0; flex-wrap:wrap}
+  .tab{
+    border:2px solid var(--line-strong); background:var(--surface); color:var(--ink-soft);
+    padding:11px 20px; border-radius:11px; font-size:15.5px; font-weight:800; letter-spacing:.02em;
+    display:inline-flex; align-items:center; gap:10px; box-shadow:var(--shadow); transition:.15s;
+  }
+  .tab:hover{border-color:var(--tc,var(--accent)); color:var(--tc,var(--accent)); transform:translateY(-1px)}
+  .tab.active{
+    background:var(--tc,var(--accent)); border-color:var(--tc,var(--accent)); color:#fff;
+    transform:translateY(-1px); box-shadow:0 6px 18px rgba(40,32,22,.22);
+  }
+  .tab.active:hover{color:#fff}
+  .tab .cnt{
+    font-size:13px; font-weight:800; background:var(--surface-2); border-radius:20px; padding:2px 10px;
+    color:var(--muted); font-variant-numeric:tabular-nums; min-width:30px; text-align:center; line-height:1.35;
+  }
+  .tab.active .cnt{background:rgba(255,255,255,.26); color:#fff}
+  .filters{display:flex; gap:8px; align-items:center; flex-wrap:wrap; margin-left:auto}
+  .search{display:flex; align-items:center; gap:7px; background:var(--surface); border:1px solid var(--line-strong); border-radius:var(--radius-sm); padding:7px 11px; min-width:200px}
+  .search input{border:none; background:transparent; color:var(--ink); font-family:inherit; font-size:13.5px; outline:none; width:100%}
+  .search svg{color:var(--faint)}
+  select.f{border:1px solid var(--line-strong); background:var(--surface); color:var(--ink-soft); padding:7px 10px; border-radius:var(--radius-sm); font-size:13px; font-family:inherit; font-weight:600}
+
+  /* board */
+  .board{display:grid; grid-template-columns:repeat(3,1fr); gap:14px}
+  .col{background:var(--surface-2); border:1px solid var(--line); border-radius:var(--radius); display:flex; flex-direction:column; min-height:120px}
+  .col.dragover{outline:2px dashed var(--accent); outline-offset:-3px}
+  .col-h{display:flex; align-items:center; gap:8px; padding:11px 13px 9px}
+  .col-h .cbar{width:8px;height:8px;border-radius:2px; background:var(--c,var(--accent)); transform:rotate(45deg)}
+  .col-h .ct{font-weight:800; font-size:13.5px}
+  .col-h .cc{margin-left:auto; font-size:12px; color:var(--muted); background:var(--surface); border:1px solid var(--line); border-radius:20px; padding:1px 8px; font-weight:700; font-variant-numeric:tabular-nums}
+  .col-body{padding:0 9px 10px; display:flex; flex-direction:column; gap:9px}
+  .grid-bucket{display:grid; grid-template-columns:repeat(auto-fill,minmax(240px,1fr)); gap:12px}
+
+  .card{background:var(--surface); border:1px solid var(--line); border-left:3px solid var(--c,var(--accent)); border-radius:var(--radius-sm); padding:11px 12px; box-shadow:var(--shadow); cursor:pointer; transition:.13s}
+  .card:hover{transform:translateY(-1px); box-shadow:var(--shadow-lg)}
+  .card.dragging{opacity:.45}
+  .card .cn{font-weight:700; font-size:13.5px; line-height:1.4; margin-bottom:8px}
+  .card-top{display:flex; gap:10px}
+  .card-thumb{width:46px;height:46px;border-radius:7px;object-fit:cover;flex:none;border:1px solid var(--line)}
+  .card-main{flex:1; min-width:0}
+  .card-meta{display:flex; align-items:center; gap:6px; flex-wrap:wrap; margin-bottom:8px}
+  .tag{font-size:11px; font-weight:700; padding:2px 8px; border-radius:6px; white-space:nowrap}
+  .tag.biz{background:var(--accent-soft); color:var(--accent-ink)}
+  .tag.owner{background:var(--surface-2); color:var(--ink-soft); border:1px solid var(--line)}
+  .pill{font-size:11px; font-weight:800; padding:2px 9px; border-radius:20px; white-space:nowrap}
+  .card-foot{display:flex; align-items:center; gap:8px; justify-content:space-between; margin-top:2px}
+  .due{font-size:11.5px; color:var(--muted); font-variant-numeric:tabular-nums; display:flex; align-items:center; gap:4px}
+  .due.soon{color:var(--bad); font-weight:700}
+  .ledger-flag{font-size:10.5px; color:var(--accent); font-weight:700; display:inline-flex; align-items:center; gap:3px}
+  .empty{padding:60px 20px; text-align:center; color:var(--muted); grid-column:1/-1}
+  .empty .big{font-size:15px; font-weight:700; color:var(--ink-soft); margin-bottom:6px}
+
+  /* drawer */
+  .scrim{position:fixed; inset:0; background:rgba(30,24,16,.42); opacity:0; pointer-events:none; transition:.2s; z-index:60}
+  .scrim.show{opacity:1; pointer-events:auto}
+  .drawer{position:fixed; top:0; right:0; height:100%; width:min(840px,100%); background:var(--surface); border-left:1px solid var(--line); box-shadow:var(--shadow-lg); z-index:70; transform:translateX(100%); transition:transform .24s cubic-bezier(.4,0,.2,1); display:flex; flex-direction:column}
+  .drawer.show{transform:none}
+  .dh{display:flex; align-items:center; gap:12px; padding:14px 20px 0; }
+  .dh .x{margin-left:auto; border:none; background:var(--surface-2); color:var(--ink-soft); width:32px; height:32px; border-radius:8px; display:grid; place-items:center}
+  .dh .x:hover{background:var(--bad-bg); color:var(--bad)}
+  .dtabs{display:flex; gap:4px; padding:10px 20px 0; border-bottom:1px solid var(--line)}
+  .dtab{border:none; background:transparent; color:var(--muted); padding:9px 14px; font-size:13.5px; font-weight:700; border-bottom:2px solid transparent; margin-bottom:-1px}
+  .dtab.active{color:var(--accent); border-bottom-color:var(--accent)}
+  .db{padding:18px 20px 40px; overflow-y:auto; display:flex; flex-direction:column; gap:15px; flex:1}
+  .field{display:flex; flex-direction:column; gap:5px}
+  .field label{font-size:11.5px; font-weight:700; color:var(--muted)}
+  .field input,.field select,.field textarea{border:1px solid var(--line-strong); background:var(--paper); color:var(--ink); font-family:inherit; font-size:14px; padding:9px 11px; border-radius:var(--radius-sm); outline:none; width:100%}
+  .field input:focus,.field select:focus,.field textarea:focus{border-color:var(--accent); box-shadow:0 0 0 3px var(--accent-soft)}
+  .field textarea{resize:vertical; min-height:64px; line-height:1.55}
+  .grid2{display:grid; grid-template-columns:1fr 1fr; gap:12px}
+  .grid3{display:grid; grid-template-columns:1fr 1fr 1fr; gap:10px}
+  .seg{display:flex; gap:8px}
+  .segbtn{flex:1; border:1px solid var(--line-strong); background:var(--paper); color:var(--muted); padding:9px 4px; border-radius:var(--radius-sm); font-weight:800; font-size:13px; transition:.13s}
+  .segbtn.on{background:var(--accent); border-color:var(--accent); color:#fff}
+  .drawer-foot{padding:14px 20px; border-top:1px solid var(--line); display:flex; gap:10px; background:var(--surface)}
+  .drawer-foot .btn{flex:1; justify-content:center}
+  .btn.danger{border-color:transparent; background:transparent; color:var(--bad)}
+  .btn.danger:hover{background:var(--bad-bg)}
+  .btn.danger.armed{background:var(--bad); color:#fff; border-color:var(--bad)}
+
+  /* ledger editor */
+  .rsec h4{margin:0 0 9px; font-size:12px; letter-spacing:.04em; color:var(--accent); font-weight:800; display:flex; align-items:center; gap:8px}
+  .rsec h4::after{content:""; flex:1; height:1px; background:var(--line)}
+  .imgbox{border:1.5px dashed var(--line-strong); border-radius:var(--radius); padding:14px; text-align:center; background:var(--paper)}
+  .imgbox img{max-width:100%; max-height:220px; border-radius:var(--radius-sm); display:block; margin:0 auto 10px}
+  .imgbox .hint{font-size:12px; color:var(--muted)}
+  table.ing{width:100%; border-collapse:collapse; font-size:12.5px; table-layout:fixed}
+  table.ing th{text-align:left; font-size:10.5px; color:var(--muted); font-weight:700; padding:2px 4px}
+  table.ing td{padding:2px 3px}
+  table.ing input{padding:6px 7px; font-size:12.5px; width:100%; min-width:0}
+  table.ing td.n input{text-align:right; font-variant-numeric:tabular-nums}
+  .ing-del{border:none;background:transparent;color:var(--faint);font-size:16px;padding:0 4px;line-height:1}
+  .ing-del:hover{color:var(--bad)}
+  .ing-total{display:flex; justify-content:space-between; align-items:center; margin-top:8px; padding-top:8px; border-top:1.5px solid var(--line-strong); font-weight:800; font-size:14px}
+  .addrow{border:1px dashed var(--line-strong); background:transparent; color:var(--accent); border-radius:var(--radius-sm); padding:7px; font-weight:700; font-size:12.5px; width:100%; margin-top:8px}
+  .addrow:hover{background:var(--accent-soft)}
+
+  .foot-note{margin-top:34px; padding-top:18px; border-top:1px solid var(--line); color:var(--faint); font-size:12px; line-height:1.7}
+  .toast{position:fixed; bottom:22px; left:50%; transform:translateX(-50%) translateY(20px); background:var(--ink); color:var(--paper); padding:11px 20px; border-radius:24px; font-size:13.5px; font-weight:700; box-shadow:var(--shadow-lg); opacity:0; pointer-events:none; transition:.24s; z-index:90; max-width:90%; text-align:center}
+  .toast.show{opacity:1; transform:translateX(-50%) translateY(0)}
+  .hide{display:none!important}
+
+  @media (max-width:900px){ .kpis{grid-template-columns:repeat(3,1fr)} .board{grid-template-columns:1fr} .filters{margin-left:0; width:100%} .search{min-width:0; flex:1} }
+  @media (max-width:560px){ .kpis{grid-template-columns:repeat(2,1fr)} .grid2,.grid3{grid-template-columns:1fr} }
+  @media (prefers-reduced-motion:reduce){*{transition:none!important}}
+</style>
+
+<header class="top">
+  <div class="top-in">
+    <div class="brand">
+      <div class="mark"><svg class="appicon" viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="商品開発管理"><rect width="100" height="100" rx="22" fill="#ffffff"/><g><g transform="rotate(0 50 50) translate(50 12) rotate(-18)"><path d="M-12 0A12 12 0 0 1 12 0Z" fill="#003c90"/></g><g transform="rotate(45 50 50) translate(50 13) rotate(14)"><path d="M-9 0A9 9 0 0 1 9 0Z" fill="#f0a800"/></g><g transform="rotate(90 50 50) translate(50 12) rotate(-10)"><path d="M-12.5 0A12.5 12.5 0 0 1 12.5 0Z" fill="#d80c30"/></g><g transform="rotate(135 50 50) translate(50 14) rotate(20)"><path d="M-8.5 0A8.5 8.5 0 0 1 8.5 0Z" fill="#0090a8"/></g><g transform="rotate(180 50 50) translate(50 12) rotate(-16)"><path d="M-12 0A12 12 0 0 1 12 0Z" fill="#d80c30"/></g><g transform="rotate(225 50 50) translate(50 13.5) rotate(12)"><path d="M-9 0A9 9 0 0 1 9 0Z" fill="#003c90"/></g><g transform="rotate(270 50 50) translate(50 12) rotate(-12)"><path d="M-12.5 0A12.5 12.5 0 0 1 12.5 0Z" fill="#0090a8"/></g><g transform="rotate(315 50 50) translate(50 14) rotate(18)"><path d="M-8.5 0A8.5 8.5 0 0 1 8.5 0Z" fill="#f0a800"/></g></g><g transform="translate(50 50) scale(0.40) translate(-50 -52)"><g stroke="#003c90" stroke-width="7" stroke-linecap="round"><path d="M30 74 L14 90"/></g><g fill="#ffffff" stroke="#003c90" stroke-width="6"><circle cx="12" cy="86" r="10"/><circle cx="18" cy="95" r="10"/></g><path d="M80 22c13 14 12 38-4 52S38 92 26 80 16 46 30 32 67 8 80 22Z" fill="#d80c30" stroke="#003c90" stroke-width="6" stroke-linejoin="round"/><path d="M78 20c5 6 8 13 9 21-11-8-25-10-37-6 7-10 17-16 28-15Z" fill="#f0a800"/></g></svg>商品開発管理</div>
+      <span class="sub" id="subcount"></span>
+    </div>
+    <div class="top-actions">
+      <button class="btn primary" id="btnNew"><svg class="icon" viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></svg>新規案件</button>
+      <button class="btn ghost" id="btnExport" title="全データをJSONで保存"><svg class="icon" viewBox="0 0 24 24"><path d="M12 3v12m0 0l-4-4m4 4l4-4M5 21h14"/></svg>書き出し</button>
+      <button class="btn ghost" id="btnImport" title="JSONを読み込み"><svg class="icon" viewBox="0 0 24 24"><path d="M12 21V9m0 0l-4 4m4-4l4 4M5 3h14"/></svg>読み込み</button>
+      <button class="btn ghost" id="btnCsv" title="一覧をCSVで出力">CSV</button>
+      <button class="btn ghost" id="btnTheme" title="表示テーマ切替"><svg class="icon" viewBox="0 0 24 24"><path d="M21 12.8A9 9 0 1111.2 3a7 7 0 009.8 9.8z"/></svg></button>
+      <input type="file" id="fileInput" accept="application/json" class="hide">
+    </div>
+  </div>
+</header>
+
+<div class="wrap">
+  <div class="kpis" id="kpis"></div>
+  <div class="toolbar">
+    <div class="tabs" id="boardTabs" role="tablist"></div>
+    <div class="filters">
+      <div class="search"><svg class="icon" viewBox="0 0 24 24"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4-4"/></svg><input id="q" placeholder="案件名・備考を検索…"></div>
+      <select class="f" id="fBiz"></select>
+      <select class="f" id="fOwner"></select>
+    </div>
+  </div>
+  <div id="view"></div>
+  <div class="foot-note" id="footnote"></div>
+</div>
+
+<div class="scrim" id="scrim"></div>
+<aside class="drawer" id="drawer" aria-hidden="true"></aside>
+<div class="toast" id="toast"></div>
+
+<script>
+const SEED = {"items":[],"cards":[]};
+
+/* ============ model ============ */
+const LS_KEY = "shohin-kaihatsu-v2";
+const PRIOS = ["最優先","なる早","順次","保留中"];
+const COL_ORDER = ["順次","なる早","最優先"];           // 作業中ボードの列（左→右）
+const PROGRESS = ["進行前","進行中","結果待ち"];
+const RESULTS = ["完成","採用(台帳待ち)","見送り","没"];
+const BOARD_TABS = ["作業中","保留中","完成","没"];
+const TAB_COLORS = {"作業中":"--accent","保留中":"--p6","完成":"--ok","没":"--bad"};
+
+const PRIO_VAR = {"最優先":"--p2","なる早":"--p3","順次":"--p4","保留中":"--p6"};
+const RESULT_COLORS = {"完成":["--ok-bg","--ok"],"採用(台帳待ち)":["--warn-bg","--warn"],"見送り":["--slate-bg","--slate"],"没":["--bad-bg","--bad"]};
+const PROG_COLORS = {"進行前":["--neutral-bg","--neutral"],"進行中":["--slate-bg","--slate"],"結果待ち":["--warn-bg","--warn"]};
+
+let state = load();
+let boardTab = "作業中";
+const filters = {q:"", biz:"", owner:""};
+
+/* ============ migration ============ */
+function cardToLedger(c){
+  return {
+    image:"", dest:c.dest||"", price:c.price||"", costRate:c.costRate||"", cookTime:c.cookTime||"",
+    target:c.target||"", marketing:c.marketing||"",
+    ingredients:(c.ingredients||[]).map(x=>({name:x.name||"",qty:x.qty||"",cost:x.cost||"",supplier:x.supplier||""})),
+    operations:(c.operations||[]).join("\n"), plus:c.plus||"", minus:c.minus||""
+  };
+}
+function normKey(s){ return (s||"").replace(/[【】（）()\s　・]/g,"").replace(/[ぁ-ん]/g,m=>String.fromCharCode(m.charCodeAt(0)+0x60)); }
+function bestCardIndexFor(name, cards){
+  const n=normKey(name); if(!n) return -1;
+  let best=-1, bestScore=1e9;
+  cards.forEach((c,i)=>{ const cn=normKey(c.name); if(!cn) return;
+    if(cn===n||cn.includes(n)||n.includes(cn)){ const sc=Math.abs(cn.length-n.length); if(sc<bestScore){bestScore=sc; best=i;} }
+  });
+  return best;
+}
+function migrateItem(o){
+  const P=o.priority||"", R=o.result||"";
+  let priority = {"2.最優先":"最優先","3.なる早":"なる早","4.順次":"順次","6.保留中":"保留中"}[P] || "順次";
+  let result="";
+  if(P==="7.没"||R==="没") result="没";
+  else if(R==="見送り") result="見送り";
+  else if(P==="5.完成") result="完成";
+  else if(R==="採用") result="採用(台帳待ち)";
+  let prog;
+  if(R==="進行中") prog="進行中";
+  else if(R==="進行前") prog="進行前";
+  else if(P==="1.結果待ち"||R==="工場提出済み") prog="結果待ち";
+  else prog = (o.p100||o.p80) ? "結果待ち" : (o.p20||o.p50) ? "進行中" : "進行前";
+  return {section:o.section||"", priority, name:(o.name||"").trim(), owner:o.owner||"", biz:o.biz||"",
+          due:o.due||"", prog, result, next:o.next||"", note:o.note||"", ledger:null};
+}
+function migrateV1(old){
+  const cards = old.cards || SEED.cards || [];
+  const items = (old.items||[]).map((x,i)=>({id:x.id||("s"+i), ...migrateItem(x)}));
+  // 台帳を名前一致で各案件へ割当
+  const used=new Set();
+  items.forEach(it=>{ const idx=bestCardIndexFor(it.name,cards); if(idx>=0 && !used.has(idx)){ it.ledger=cardToLedger(cards[idx]); used.add(idx);} });
+  // 未割当の台帳は案件として保持
+  cards.forEach((c,i)=>{ if(used.has(i)) return;
+    items.push({id:"c"+i, section:"商品台帳", priority:"順次", name:c.name, owner:"", biz:guessBiz(c),
+      due:"", prog:"結果待ち", result:(c.price||c.dest)?"採用(台帳待ち)":"", next:"", note:"", ledger:cardToLedger(c)});
+  });
+  return {version:2, items};
+}
+function guessBiz(c){ const s=(c.name||"")+(c.dest||""); for(const b of ["BI","FB","鳥辰","スキヤキ","工場"]) if(s.includes(b)) return b; return ""; }
+
+function load(){
+  try{
+    const raw = localStorage.getItem(LS_KEY);
+    if(raw){ const p=JSON.parse(raw); if(p&&p.version>=2&&p.items){ p.items.forEach(fixItem); return p; } }
+    const old = localStorage.getItem("shohin-kaihatsu-v1");
+    if(old){ const p=JSON.parse(old); if(p&&p.items) return migrateV1(p); }
+  }catch(e){}
+  return migrateV1({items:SEED.items, cards:SEED.cards});
+}
+function fixItem(it){ if(!PRIOS.includes(it.priority)) it.priority="順次"; if(it.ledger===undefined) it.ledger=null; }
+function persist(){ try{ localStorage.setItem(LS_KEY, JSON.stringify(state)); return true; }catch(e){ toast("保存容量オーバー：画像を減らすか「書き出し」でバックアップしてください"); return false; } }
+
+/* ============ helpers ============ */
+const $ = s=>document.querySelector(s);
+const el=(t,c,h)=>{const e=document.createElement(t); if(c)e.className=c; if(h!=null)e.innerHTML=h; return e;};
+const esc=s=>(s==null?"":String(s)).replace(/[&<>"]/g,m=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[m]));
+function prioColor(p){ return `var(${PRIO_VAR[p]||"--accent"})`; }
+function pill(text,pair){ if(!text) return ""; return `<span class="pill" style="background:var(${pair[0]});color:var(${pair[1]})">${esc(text)}</span>`; }
+function statusPill(it){ if(it.result && RESULT_COLORS[it.result]) return pill(it.result,RESULT_COLORS[it.result]); if(it.prog && PROG_COLORS[it.prog]) return pill(it.prog,PROG_COLORS[it.prog]); return ""; }
+function hasLedger(it){ const l=it.ledger; return !!(l && (l.image || (l.ingredients&&l.ingredients.length) || l.operations || l.price || l.dest || l.plus || l.minus)); }
+function bucketOf(it){ if(it.result==="完成") return "完成"; if(it.result==="没"||it.result==="見送り") return "没"; if(it.priority==="保留中") return "保留中"; return "作業中"; }
+function daysTo(due){ if(!due) return null; const m=due.match(/(\d{4})\/(\d{1,2})\/(\d{1,2})/); if(!m) return null; return Math.round((new Date(+m[1],+m[2]-1,+m[3])-new Date())/86400000); }
+function toast(msg){ const t=$("#toast"); t.textContent=msg; t.classList.add("show"); clearTimeout(t._t); t._t=setTimeout(()=>t.classList.remove("show"),2400); }
+function sumCost(ings){ let s=0,has=false; (ings||[]).forEach(x=>{ const v=parseFloat(String(x.cost).replace(/[^\d.]/g,"")); if(!isNaN(v)){s+=v;has=true;} }); return has? "¥"+s.toLocaleString(undefined,{maximumFractionDigits:2}) : ""; }
+
+function matchFilter(it){
+  if(filters.biz && it.biz!==filters.biz) return false;
+  if(filters.owner && it.owner!==filters.owner) return false;
+  const q=filters.q.trim().toLowerCase();
+  if(q){ const hay=(it.name+" "+it.note+" "+it.next+" "+it.owner+" "+it.biz).toLowerCase(); if(!hay.includes(q)) return false; }
+  return true;
+}
+
+/* ============ KPI ============ */
+function renderKpis(){
+  const it=state.items;
+  const b=name=>it.filter(x=>bucketOf(x)===name).length;
+  const r=name=>it.filter(x=>x.result===name).length;
+  const defs=[
+    ["--accent", it.length, "全案件"],
+    ["--p4", b("作業中"), "作業中"],
+    ["--warn", r("採用(台帳待ち)"), "採用(台帳待ち)"],
+    ["--ok", r("完成"), "完成"],
+    ["--p6", b("保留中"), "保留中"],
+    ["--bad", r("没")+r("見送り"), "没・見送り"],
+  ];
+  $("#kpis").innerHTML=defs.map(([k,n,l])=>`<div class="kpi" style="--k:var(${k})"><div class="num">${n}</div><div class="lbl">${l}</div></div>`).join("");
+  const withL=it.filter(hasLedger).length;
+  $("#subcount").textContent=`案件 ${it.length}件 ・ 商品台帳 ${withL}件`;
+}
+
+/* ============ board tabs ============ */
+function renderTabs(){
+  const counts={}; BOARD_TABS.forEach(t=>counts[t]=0);
+  state.items.filter(matchFilter).forEach(it=>counts[bucketOf(it)]++);
+  $("#boardTabs").innerHTML=BOARD_TABS.map(t=>`<button class="tab ${t===boardTab?"active":""}" data-tab="${t}" style="--tc:var(${TAB_COLORS[t]||"--accent"})">${t}<span class="cnt">${counts[t]}</span></button>`).join("");
+  $("#boardTabs").querySelectorAll(".tab").forEach(b=>b.addEventListener("click",()=>{ boardTab=b.dataset.tab; render(); }));
+}
+
+/* ============ views ============ */
+function render(){ renderKpis(); renderTabs(); (boardTab==="作業中")? renderWorkBoard() : renderBucket(boardTab); }
+
+function renderWorkBoard(){
+  const items=state.items.filter(it=>matchFilter(it)&&bucketOf(it)==="作業中");
+  const board=el("div","board");
+  COL_ORDER.forEach(p=>{
+    const col=el("div","col"); col.dataset.prio=p;
+    const list=items.filter(x=>x.priority===p);
+    col.innerHTML=`<div class="col-h"><span class="cbar" style="background:${prioColor(p)}"></span><span class="ct">${p}</span><span class="cc">${list.length}</span></div>`;
+    const body=el("div","col-body"); list.forEach(it=>body.appendChild(cardEl(it))); col.appendChild(body);
+    col.addEventListener("dragover",e=>{e.preventDefault(); col.classList.add("dragover");});
+    col.addEventListener("dragleave",()=>col.classList.remove("dragover"));
+    col.addEventListener("drop",e=>{ e.preventDefault(); col.classList.remove("dragover");
+      const id=e.dataTransfer.getData("id"); const it=state.items.find(x=>x.id===id);
+      if(it&&it.priority!==p){ it.priority=p; persist(); render(); toast(`「${it.name}」を ${p} へ移動`); } });
+    board.appendChild(col);
+  });
+  const host=el("div"); host.appendChild(board);
+  if(!items.length) host.appendChild(el("div","empty",`<div class="big">作業中の案件はありません</div>フィルタを外すか、新規案件を追加してください。`));
+  $("#view").replaceChildren(host);
+}
+function renderBucket(name){
+  const items=state.items.filter(it=>matchFilter(it)&&bucketOf(it)===name);
+  const grid=el("div","grid-bucket");
+  items.forEach(it=>grid.appendChild(cardEl(it)));
+  if(!items.length) grid.appendChild(el("div","empty",`<div class="big">${name}の案件はありません</div>`));
+  $("#view").replaceChildren(grid);
+}
+function cardEl(it){
+  const c=el("div","card"); c.style.setProperty("--c",prioColor(it.priority));
+  c.draggable=(boardTab==="作業中");
+  c.addEventListener("dragstart",e=>{e.dataTransfer.setData("id",it.id); c.classList.add("dragging");});
+  c.addEventListener("dragend",()=>c.classList.remove("dragging"));
+  const dd=daysTo(it.due); const soon=dd!=null&&dd<=14&&!it.result;
+  const img=it.ledger&&it.ledger.image;
+  c.innerHTML=`
+    <div class="card-top">
+      ${img?`<img class="card-thumb" src="${img}" alt="">`:""}
+      <div class="card-main">
+        <div class="cn">${esc(it.name)}</div>
+        <div class="card-meta">
+          ${it.biz?`<span class="tag biz">${esc(it.biz)}</span>`:""}
+          ${it.owner?`<span class="tag owner">${esc(it.owner)}</span>`:""}
+          ${statusPill(it)}
+        </div>
+        <div class="card-foot">
+          ${it.due?`<span class="due ${soon?"soon":""}">${soon?"⚑ ":""}${esc(it.due.replace(/^\d{4}\//,""))}</span>`:`<span></span>`}
+          ${hasLedger(it)?`<span class="ledger-flag">◆ 台帳</span>`:""}
+        </div>
+      </div>
+    </div>`;
+  c.addEventListener("click",()=>openItem(it.id));
+  return c;
+}
+
+/* ============ drawer ============ */
+let drawerTab="info";
+function openItem(id){
+  const it=state.items.find(x=>x.id===id); if(!it) return;
+  if(!it.ledger) it.ledger={image:"",dest:"",price:"",costRate:"",cookTime:"",target:"",marketing:"",ingredients:[],operations:"",plus:"",minus:""};
+  drawerTab="info";
+  const draft={ priority:it.priority, prog:it.prog, name:it.name, owner:it.owner, biz:it.biz, due:it.due, result:it.result, next:it.next, note:it.note };
+  const led=JSON.parse(JSON.stringify(it.ledger));
+  const d=$("#drawer");
+
+  function paint(){
+    d.innerHTML=`
+      <div class="dh"><button class="x" id="dClose" aria-label="閉じる"><svg class="icon" viewBox="0 0 24 24"><path d="M6 6l12 12M18 6L6 18"/></svg></button></div>
+      <div class="dtabs">
+        <button class="dtab ${drawerTab==="info"?"active":""}" data-t="info">案件情報</button>
+        <button class="dtab ${drawerTab==="ledger"?"active":""}" data-t="ledger">商品台帳${hasLedgerDraft()?" ◆":""}</button>
+      </div>
+      <div class="db">${drawerTab==="info"?infoHTML():ledgerHTML()}</div>
+      <div class="drawer-foot">
+        <button class="btn danger" id="dDelete"><svg class="icon" viewBox="0 0 24 24"><path d="M4 7h16M9 7V5h6v2M6 7l1 13h10l1-13"/></svg>削除</button>
+        <button class="btn primary" id="dSave">保存</button>
+      </div>`;
+    d.querySelector("#dClose").addEventListener("click",closeDrawer);
+    d.querySelectorAll(".dtab").forEach(b=>b.addEventListener("click",()=>{ collect(); drawerTab=b.dataset.t; paint(); }));
+    bind();
+    wireDelete(id);
+    d.querySelector("#dSave").addEventListener("click",()=>{ collect(); saveItem(it,draft,led); });
+  }
+  function hasLedgerDraft(){ return !!(led.image||led.ingredients.length||led.operations||led.price||led.dest||led.plus||led.minus); }
+
+  function infoHTML(){ return `
+    <div class="field"><label>開発案件名</label><input id="f_name" value="${esc(draft.name)}"></div>
+    <div class="grid2">
+      <div class="field"><label>優先度</label><select id="f_priority">${PRIOS.map(p=>`<option ${p===draft.priority?"selected":""}>${p}</option>`).join("")}</select></div>
+      <div class="field"><label>結果（未確定は空欄）</label><select id="f_result"><option value="">未確定</option>${RESULTS.map(r=>`<option ${r===draft.result?"selected":""}>${r}</option>`).join("")}</select></div>
+    </div>
+    <div class="field"><label>進捗</label><div class="seg" id="f_prog">${PROGRESS.map(p=>`<button type="button" class="segbtn ${p===draft.prog?"on":""}" data-v="${p}">${p}</button>`).join("")}</div></div>
+    <div class="grid2">
+      <div class="field"><label>担当</label><input id="f_owner" value="${esc(draft.owner)}" list="ownerList"></div>
+      <div class="field"><label>業態</label><input id="f_biz" value="${esc(draft.biz)}" list="bizList"></div>
+    </div>
+    <div class="field"><label>完成／導入希望日</label><input id="f_due" value="${esc(draft.due)}" placeholder="例: 2026/07/15"></div>
+    <div class="field"><label>次回予定</label><input id="f_next" value="${esc(draft.next)}"></div>
+    <div class="field"><label>備考</label><textarea id="f_note">${esc(draft.note)}</textarea></div>`; }
+
+  function ledgerHTML(){ return `
+    <div class="rsec"><h4>完成見本画像</h4>
+      <div class="imgbox" id="imgbox">
+        ${led.image?`<img src="${led.image}" alt="完成見本"><button type="button" class="btn danger" id="imgDel" style="margin:0 auto">画像を削除</button>`
+          :`<div class="hint">クリックまたはドラッグで画像を登録<br>（自動で縮小して保存します）</div>`}
+      </div>
+      <input type="file" id="imgInput" accept="image/*" class="hide">
+    </div>
+    <div class="grid2">
+      <div class="field"><label>導入先</label><input id="l_dest" value="${esc(led.dest)}"></div>
+      <div class="field"><label>希望売価</label><input id="l_price" value="${esc(led.price)}" placeholder="例: ¥1,200"></div>
+    </div>
+    <div class="grid2">
+      <div class="field"><label>原価率</label><input id="l_costRate" value="${esc(led.costRate)}"></div>
+      <div class="field"><label>調理／提供時間</label><input id="l_cookTime" value="${esc(led.cookTime)}" placeholder="例: 5分"></div>
+    </div>
+    <div class="rsec"><h4>食材一覧</h4>
+      <table class="ing"><thead><tr><th>食材名</th><th style="width:74px">使用量</th><th style="width:92px">原材料費</th><th style="width:120px">発注先</th><th style="width:26px"></th></tr></thead>
+      <tbody id="ingBody">${led.ingredients.map((x,i)=>ingRow(x,i)).join("")}</tbody></table>
+      <button type="button" class="addrow" id="ingAdd">＋ 食材を追加</button>
+      <div class="ing-total"><span>合計原価</span><span id="ingTotal">${sumCost(led.ingredients)||"—"}</span></div>
+    </div>
+    <div class="field"><label>オペレーション手順（1行1手順）</label><textarea id="l_ops" style="min-height:110px">${esc(led.operations)}</textarea></div>
+    <div class="field"><label>想定ターゲット</label><textarea id="l_target">${esc(led.target)}</textarea></div>
+    <div class="field"><label>マーケティング</label><textarea id="l_marketing">${esc(led.marketing)}</textarea></div>
+    <div class="grid2">
+      <div class="field"><label>プラスのコメント</label><textarea id="l_plus">${esc(led.plus)}</textarea></div>
+      <div class="field"><label>マイナスのコメント</label><textarea id="l_minus">${esc(led.minus)}</textarea></div>
+    </div>`; }
+  function ingRow(x,i){ return `<tr data-i="${i}">
+    <td><input class="i_name" value="${esc(x.name)}"></td>
+    <td class="n"><input class="i_qty" value="${esc(x.qty)}"></td>
+    <td class="n"><input class="i_cost" value="${esc(x.cost)}"></td>
+    <td><input class="i_sup" value="${esc(x.supplier)}"></td>
+    <td><button type="button" class="ing-del" title="削除">×</button></td></tr>`; }
+
+  function bind(){
+    if(drawerTab==="info"){
+      d.querySelectorAll("#f_prog .segbtn").forEach(b=>b.addEventListener("click",()=>{
+        const v=b.dataset.v; draft.prog=(draft.prog===v)?"":v;
+        d.querySelectorAll("#f_prog .segbtn").forEach(x=>x.classList.toggle("on",x.dataset.v===draft.prog));
+      }));
+    } else {
+      const box=d.querySelector("#imgbox"), input=d.querySelector("#imgInput");
+      box.addEventListener("click",e=>{ if(e.target.id!=="imgDel") input.click(); });
+      input.addEventListener("change",e=>{ const f=e.target.files[0]; if(f){ collect(); readImageResized(f,url=>{ led.image=url; paint(); }); } });
+      const del=d.querySelector("#imgDel"); if(del) del.addEventListener("click",e=>{ e.stopPropagation(); collect(); led.image=""; paint(); });
+      d.querySelector("#ingAdd").addEventListener("click",()=>{ collect(); led.ingredients.push({name:"",qty:"",cost:"",supplier:""}); paint(); });
+      d.querySelectorAll("#ingBody .ing-del").forEach(btn=>btn.addEventListener("click",()=>{ collect(); const i=+btn.closest("tr").dataset.i; led.ingredients.splice(i,1); paint(); }));
+      d.querySelectorAll("#ingBody .i_cost, #ingBody .i_name").forEach(inp=>inp.addEventListener("input",()=>{ // live total
+        const rows=[...d.querySelectorAll("#ingBody tr")].map(tr=>({cost:tr.querySelector(".i_cost").value}));
+        d.querySelector("#ingTotal").textContent=sumCost(rows)||"—";
+      }));
+    }
+  }
+  function collect(){
+    if(drawerTab==="info"){
+      draft.name=d.querySelector("#f_name").value.trim()||draft.name;
+      draft.priority=d.querySelector("#f_priority").value;
+      draft.result=d.querySelector("#f_result").value;
+      draft.owner=d.querySelector("#f_owner").value.trim();
+      draft.biz=d.querySelector("#f_biz").value.trim();
+      draft.due=d.querySelector("#f_due").value.trim();
+      draft.next=d.querySelector("#f_next").value.trim();
+      draft.note=d.querySelector("#f_note").value.trim();
+    } else {
+      led.dest=d.querySelector("#l_dest").value.trim();
+      led.price=d.querySelector("#l_price").value.trim();
+      led.costRate=d.querySelector("#l_costRate").value.trim();
+      led.cookTime=d.querySelector("#l_cookTime").value.trim();
+      led.operations=d.querySelector("#l_ops").value;
+      led.target=d.querySelector("#l_target").value.trim();
+      led.marketing=d.querySelector("#l_marketing").value.trim();
+      led.plus=d.querySelector("#l_plus").value.trim();
+      led.minus=d.querySelector("#l_minus").value.trim();
+      led.ingredients=[...d.querySelectorAll("#ingBody tr")].map(tr=>({
+        name:tr.querySelector(".i_name").value.trim(), qty:tr.querySelector(".i_qty").value.trim(),
+        cost:tr.querySelector(".i_cost").value.trim(), supplier:tr.querySelector(".i_sup").value.trim()
+      })).filter(x=>x.name||x.qty||x.cost||x.supplier);
+    }
+  }
+  function wireDelete(id){
+    const b=d.querySelector("#dDelete"); const orig=b.innerHTML; let armed=false,t;
+    b.addEventListener("click",()=>{ if(!armed){ armed=true; b.classList.add("armed"); b.textContent="もう一度押すと削除"; t=setTimeout(()=>{armed=false;b.classList.remove("armed");b.innerHTML=orig;},3500); return; }
+      clearTimeout(t); state.items=state.items.filter(x=>x.id!==id); persist(); closeDrawer(); render(); toast("削除しました"); });
+  }
+  paint(); showDrawer();
+}
+function saveItem(it,draft,led){
+  Object.assign(it,draft);
+  led.ingredients=(led.ingredients||[]).filter(x=>x.name||x.qty||x.cost||x.supplier);
+  it.ledger = (led.image||led.ingredients.length||led.operations||led.price||led.dest||led.plus||led.minus||led.target||led.marketing||led.costRate||led.cookTime) ? led : null;
+  if(persist()){ closeDrawer(); render(); toast("保存しました"); }
+}
+function showDrawer(){ $("#drawer").classList.add("show"); $("#drawer").setAttribute("aria-hidden","false"); $("#scrim").classList.add("show"); }
+function closeDrawer(){ $("#drawer").classList.remove("show"); $("#drawer").setAttribute("aria-hidden","true"); $("#scrim").classList.remove("show"); }
+
+/* image resize → dataURL */
+function readImageResized(file,cb){
+  const r=new FileReader();
+  r.onload=()=>{ const img=new Image(); img.onload=()=>{ const max=1100; let w=img.width,h=img.height;
+    if(w>max||h>max){ const s=Math.min(max/w,max/h); w=Math.round(w*s); h=Math.round(h*s); }
+    const cv=document.createElement("canvas"); cv.width=w; cv.height=h; cv.getContext("2d").drawImage(img,0,0,w,h);
+    try{ cb(cv.toDataURL("image/jpeg",0.72)); }catch(e){ toast("画像を読み込めませんでした"); } };
+    img.onerror=()=>toast("画像を読み込めませんでした"); img.src=r.result; };
+  r.readAsDataURL(file);
+}
+
+/* ============ new item ============ */
+function newItem(){
+  const it={id:"n"+Date.now(), section:"手動追加", priority:(boardTab==="保留中"?"保留中":"最優先"), name:"新規案件",
+    owner:"", biz:"", due:"", prog:"進行前", result:"", next:"", note:"", ledger:null};
+  state.items.unshift(it); persist(); render(); openItem(it.id); toast("新規案件を追加");
+}
+
+/* ============ filters ============ */
+function buildFilterOptions(){
+  const uniq=k=>[...new Set(state.items.map(x=>x[k]).filter(Boolean))].sort((a,b)=>a.localeCompare(b,"ja"));
+  const fill=(sel,label,vals)=>{ sel.innerHTML=`<option value="">${label}</option>`+vals.map(v=>`<option>${esc(v)}</option>`).join(""); };
+  fill($("#fBiz"),"業態: すべて",uniq("biz"));
+  fill($("#fOwner"),"担当: すべて",uniq("owner"));
+  let dl=document.getElementById("bizList")||document.body.appendChild(el("datalist")); dl.id="bizList"; dl.innerHTML=uniq("biz").map(v=>`<option value="${esc(v)}">`).join("");
+  let dl2=document.getElementById("ownerList")||document.body.appendChild(el("datalist")); dl2.id="ownerList"; dl2.innerHTML=uniq("owner").map(v=>`<option value="${esc(v)}">`).join("");
+}
+
+/* ============ export / import ============ */
+function download(name,text,type){ const b=new Blob([text],{type}); const u=URL.createObjectURL(b); const a=el("a"); a.href=u; a.download=name; a.click(); URL.revokeObjectURL(u); }
+function today(){ const d=new Date(); return d.getFullYear()+String(d.getMonth()+1).padStart(2,"0")+String(d.getDate()).padStart(2,"0"); }
+function exportJson(){ download("商品開発管理_"+today()+".json", JSON.stringify(state), "application/json"); toast("JSONを書き出しました"); }
+function exportCsv(){
+  const head=["優先度","開発案件","担当","業態","希望日","進捗","結果","次回予定","備考"];
+  const rows=state.items.filter(matchFilter).map(it=>[it.priority,it.name,it.owner,it.biz,it.due,it.prog,it.result,it.next,it.note]);
+  const csv=[head,...rows].map(r=>r.map(c=>`"${String(c==null?"":c).replace(/"/g,'""')}"`).join(",")).join("\r\n");
+  download("商品開発一覧_"+today()+".csv","﻿"+csv,"text/csv"); toast("CSVを出力しました");
+}
+function importJson(file){
+  const r=new FileReader();
+  r.onload=()=>{ try{ let p=JSON.parse(r.result);
+    if(p.version>=2&&p.items){ p.items.forEach(fixItem); state=p; }
+    else if(p.items){ state=migrateV1(p); }
+    else throw 0;
+    persist(); buildFilterOptions(); render(); toast("データを読み込みました");
+  }catch(e){ toast("読み込めませんでした（JSON形式を確認してください）"); } };
+  r.readAsText(file);
+}
+
+/* ============ events ============ */
+$("#q").addEventListener("input",e=>{filters.q=e.target.value; render();});
+$("#fBiz").addEventListener("change",e=>{filters.biz=e.target.value; render();});
+$("#fOwner").addEventListener("change",e=>{filters.owner=e.target.value; render();});
+$("#btnNew").addEventListener("click",newItem);
+$("#btnExport").addEventListener("click",exportJson);
+$("#btnCsv").addEventListener("click",exportCsv);
+$("#btnImport").addEventListener("click",()=>$("#fileInput").click());
+$("#fileInput").addEventListener("change",e=>{ if(e.target.files[0]) importJson(e.target.files[0]); e.target.value=""; });
+$("#scrim").addEventListener("click",closeDrawer);
+document.addEventListener("keydown",e=>{ if(e.key==="Escape") closeDrawer(); });
+$("#btnTheme").addEventListener("click",()=>{ const cur=document.documentElement.getAttribute("data-theme"); document.documentElement.setAttribute("data-theme", cur==="dark"?"light":"dark"); });
+
+$("#footnote").innerHTML=`元データ：Googleスプレッドシート「商品開発」から移行。<b>優先度</b>＝ボードの列（最優先／なる早／順次／保留中）、<b>進捗</b>＝作業状態（進行前→進行中→結果待ち）、<b>結果</b>＝最終判断（完成／採用(台帳待ち)／見送り／没）。作業中ボードはカードをドラッグで列移動できます。編集内容はこのブラウザに自動保存され、共有・バックアップは「書き出し」→別環境で「読み込み」。`;
+
+buildFilterOptions();
+render();
+persist();
+</script>

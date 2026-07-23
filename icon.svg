@@ -1,0 +1,30 @@
+<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="商品開発管理">
+  <rect width="100" height="100" rx="22" fill="#ffffff"/>
+  <!-- ロゴのドーム（半円）を風車状に配置：ブランド4色 -->
+  <g>
+    <g transform="rotate(0 50 50) translate(50 12) rotate(-18)"><path d="M-12 0A12 12 0 0 1 12 0Z" fill="#003c90"/></g>
+    <g transform="rotate(45 50 50) translate(50 13) rotate(14)"><path d="M-9 0A9 9 0 0 1 9 0Z" fill="#f0a800"/></g>
+    <g transform="rotate(90 50 50) translate(50 12) rotate(-10)"><path d="M-12.5 0A12.5 12.5 0 0 1 12.5 0Z" fill="#d80c30"/></g>
+    <g transform="rotate(135 50 50) translate(50 14) rotate(20)"><path d="M-8.5 0A8.5 8.5 0 0 1 8.5 0Z" fill="#0090a8"/></g>
+    <g transform="rotate(180 50 50) translate(50 12) rotate(-16)"><path d="M-12 0A12 12 0 0 1 12 0Z" fill="#d80c30"/></g>
+    <g transform="rotate(225 50 50) translate(50 13.5) rotate(12)"><path d="M-9 0A9 9 0 0 1 9 0Z" fill="#003c90"/></g>
+    <g transform="rotate(270 50 50) translate(50 12) rotate(-12)"><path d="M-12.5 0A12.5 12.5 0 0 1 12.5 0Z" fill="#0090a8"/></g>
+    <g transform="rotate(315 50 50) translate(50 14) rotate(18)"><path d="M-8.5 0A8.5 8.5 0 0 1 8.5 0Z" fill="#f0a800"/></g>
+  </g>
+  <!-- 中央：お肉（骨付き） -->
+  <g transform="translate(50 50) scale(0.40) translate(-50 -52)">
+    <!-- 骨 -->
+    <g fill="#ffffff" stroke="#003c90" stroke-width="7" stroke-linejoin="round">
+      <path d="M30 74 L14 90" stroke-linecap="round"/>
+    </g>
+    <g fill="#ffffff" stroke="#003c90" stroke-width="6">
+      <circle cx="12" cy="86" r="10"/>
+      <circle cx="18" cy="95" r="10"/>
+    </g>
+    <!-- 赤身 -->
+    <path d="M80 22c13 14 12 38-4 52S38 92 26 80 16 46 30 32 67 8 80 22Z"
+          fill="#d80c30" stroke="#003c90" stroke-width="6" stroke-linejoin="round"/>
+    <!-- 脂身（ロゴの黄） -->
+    <path d="M78 20c5 6 8 13 9 21-11-8-25-10-37-6 7-10 17-16 28-15Z" fill="#f0a800"/>
+  </g>
+</svg>

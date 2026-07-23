@@ -1,0 +1,21 @@
+{
+  "name": "商品開発管理",
+  "short_name": "商品開発",
+  "description": "商品開発の案件管理（優先度ボード・商品台帳）",
+  "start_url": "./",
+  "display": "standalone",
+  "background_color": "#f6f2ea",
+  "theme_color": "#9c4a2f",
+  "icons": [
+    {
+      "src": "icon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml"
+    },
+    {
+      "src": "favicon-32.png",
+      "sizes": "32x32",
+      "type": "image/png"
+    }
+  ]
+}
