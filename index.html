@@ -175,6 +175,33 @@
   .toast.show{opacity:1; transform:translateX(-50%) translateY(0)}
   .hide{display:none!important}
 
+  /* sync status pill */
+  .syncpill{border:1px solid var(--line-strong); background:var(--surface); color:var(--muted); font-family:inherit; font-size:11px; font-weight:700; padding:3px 10px; border-radius:20px; display:inline-flex; align-items:center; gap:6px; cursor:pointer}
+  .syncpill::before{content:""; width:8px; height:8px; border-radius:50%; background:var(--faint)}
+  .syncpill:hover{border-color:var(--accent); color:var(--accent)}
+  .syncpill.on{color:var(--ok); border-color:var(--ok)} .syncpill.on::before{background:var(--ok)}
+  .syncpill.busy{color:var(--warn); border-color:var(--warn)} .syncpill.busy::before{background:var(--warn)}
+  .syncpill.err{color:var(--bad); border-color:var(--bad)} .syncpill.err::before{background:var(--bad)}
+
+  /* modal */
+  .mscrim{position:fixed; inset:0; background:rgba(30,24,16,.42); opacity:0; pointer-events:none; transition:.2s; z-index:80}
+  .mscrim.show{opacity:1; pointer-events:auto}
+  .modal{position:fixed; left:50%; top:50%; transform:translate(-50%,-48%) scale(.98); width:min(520px,94vw); max-height:90vh; overflow:auto; background:var(--surface); border:1px solid var(--line); border-radius:var(--radius); box-shadow:var(--shadow-lg); z-index:81; opacity:0; pointer-events:none; transition:.2s}
+  .modal.show{opacity:1; pointer-events:auto; transform:translate(-50%,-50%) scale(1)}
+  .mhead{display:flex; align-items:center; padding:16px 20px; border-bottom:1px solid var(--line)}
+  .mtitle{font-weight:800; font-size:16px}
+  .mhead .x{margin-left:auto; border:none; background:var(--surface-2); color:var(--ink-soft); width:32px; height:32px; border-radius:8px; display:grid; place-items:center}
+  .mhead .x:hover{background:var(--bad-bg); color:var(--bad)}
+  .mbody{padding:18px 20px 22px; display:flex; flex-direction:column; gap:13px}
+  .mlead{margin:0; font-size:12.5px; color:var(--muted); line-height:1.65}
+  .mrow{display:flex; gap:10px}
+  .mrow .btn{flex:1; justify-content:center}
+  .mdiv{height:1px; background:var(--line); margin:2px 0}
+  .warn-btn{border-color:var(--warn); color:var(--warn); justify-content:center}
+  .warn-btn:hover{background:var(--warn-bg); color:var(--warn)}
+  .s-status{font-size:12.5px; font-weight:700; min-height:18px}
+  .s-status.ok{color:var(--ok)} .s-status.err{color:var(--bad)} .s-status.busy{color:var(--warn)}
+
   @media (max-width:900px){ .kpis{grid-template-columns:repeat(3,1fr)} .board{grid-template-columns:1fr} .filters{margin-left:0; width:100%} .search{min-width:0; flex:1} }
   @media (max-width:560px){ .kpis{grid-template-columns:repeat(2,1fr)} .grid2,.grid3{grid-template-columns:1fr} }
   @media (prefers-reduced-motion:reduce){*{transition:none!important}}
@@ -185,12 +212,14 @@
     <div class="brand">
       <div class="mark"><svg class="appicon" viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="商品開発管理"><rect width="100" height="100" rx="22" fill="#ffffff"/><g><g transform="rotate(0 50 50) translate(50 12) rotate(-18)"><path d="M-12 0A12 12 0 0 1 12 0Z" fill="#003c90"/></g><g transform="rotate(45 50 50) translate(50 13) rotate(14)"><path d="M-9 0A9 9 0 0 1 9 0Z" fill="#f0a800"/></g><g transform="rotate(90 50 50) translate(50 12) rotate(-10)"><path d="M-12.5 0A12.5 12.5 0 0 1 12.5 0Z" fill="#d80c30"/></g><g transform="rotate(135 50 50) translate(50 14) rotate(20)"><path d="M-8.5 0A8.5 8.5 0 0 1 8.5 0Z" fill="#0090a8"/></g><g transform="rotate(180 50 50) translate(50 12) rotate(-16)"><path d="M-12 0A12 12 0 0 1 12 0Z" fill="#d80c30"/></g><g transform="rotate(225 50 50) translate(50 13.5) rotate(12)"><path d="M-9 0A9 9 0 0 1 9 0Z" fill="#003c90"/></g><g transform="rotate(270 50 50) translate(50 12) rotate(-12)"><path d="M-12.5 0A12.5 12.5 0 0 1 12.5 0Z" fill="#0090a8"/></g><g transform="rotate(315 50 50) translate(50 14) rotate(18)"><path d="M-8.5 0A8.5 8.5 0 0 1 8.5 0Z" fill="#f0a800"/></g></g><g transform="translate(50 50) scale(0.40) translate(-50 -52)"><g stroke="#003c90" stroke-width="7" stroke-linecap="round"><path d="M30 74 L14 90"/></g><g fill="#ffffff" stroke="#003c90" stroke-width="6"><circle cx="12" cy="86" r="10"/><circle cx="18" cy="95" r="10"/></g><path d="M80 22c13 14 12 38-4 52S38 92 26 80 16 46 30 32 67 8 80 22Z" fill="#d80c30" stroke="#003c90" stroke-width="6" stroke-linejoin="round"/><path d="M78 20c5 6 8 13 9 21-11-8-25-10-37-6 7-10 17-16 28-15Z" fill="#f0a800"/></g></svg>商品開発管理</div>
       <span class="sub" id="subcount"></span>
+      <button class="syncpill" id="syncPill" title="共有の状態"></button>
     </div>
     <div class="top-actions">
       <button class="btn primary" id="btnNew"><svg class="icon" viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></svg>新規案件</button>
       <button class="btn ghost" id="btnExport" title="全データをJSONで保存"><svg class="icon" viewBox="0 0 24 24"><path d="M12 3v12m0 0l-4-4m4 4l4-4M5 21h14"/></svg>書き出し</button>
       <button class="btn ghost" id="btnImport" title="JSONを読み込み"><svg class="icon" viewBox="0 0 24 24"><path d="M12 21V9m0 0l-4 4m4-4l4 4M5 3h14"/></svg>読み込み</button>
       <button class="btn ghost" id="btnCsv" title="一覧をCSVで出力">CSV</button>
+      <button class="btn ghost" id="btnSync" title="全員でデータを共有する設定"><svg class="icon" viewBox="0 0 24 24"><path d="M4 12a8 8 0 0114-5.3L20 8M20 12a8 8 0 01-14 5.3L4 16"/><path d="M20 4v4h-4M4 20v-4h4"/></svg>共有</button>
       <button class="btn ghost" id="btnTheme" title="表示テーマ切替"><svg class="icon" viewBox="0 0 24 24"><path d="M21 12.8A9 9 0 1111.2 3a7 7 0 009.8 9.8z"/></svg></button>
       <input type="file" id="fileInput" accept="application/json" class="hide">
     </div>
@@ -213,6 +242,27 @@
 
 <div class="scrim" id="scrim"></div>
 <aside class="drawer" id="drawer" aria-hidden="true"></aside>
+
+<div class="mscrim" id="mscrim"></div>
+<div class="modal" id="syncModal" aria-hidden="true" role="dialog">
+  <div class="mhead"><span class="mtitle">全員でデータを共有</span><button class="x" id="mClose" aria-label="閉じる"><svg class="icon" viewBox="0 0 24 24"><path d="M6 6l12 12M18 6L6 18"/></svg></button></div>
+  <div class="mbody">
+    <p class="mlead">Googleスプレッドシートを保存先にして、全員が同じデータを読み書きします。初回のみ、下の「接続先URL」と「合言葉」を入力してください（管理者から共有されたもの）。</p>
+    <div class="field"><label>接続先URL（Apps Scriptの /exec URL）</label><input id="s_url" placeholder="https://script.google.com/macros/s/.../exec"></div>
+    <div class="field"><label>合言葉（トークン）</label><input id="s_token" placeholder="管理者が設定した合言葉"></div>
+    <div id="s_status" class="s-status"></div>
+    <div class="mrow">
+      <button class="btn" id="s_test">接続テスト</button>
+      <button class="btn primary" id="s_connect">接続して読み込む</button>
+    </div>
+    <div class="mdiv"></div>
+    <p class="mlead"><b>管理者の方へ（初回セットアップ）：</b> このブラウザの現在のデータをサーバーへ最初に保存します。以後は全員の編集が自動で同期されます。</p>
+    <button class="btn warn-btn" id="s_push">このブラウザのデータをサーバーへ保存（初回アップロード）</button>
+    <div class="mdiv"></div>
+    <button class="btn ghost" id="s_disconnect">共有を解除（この端末のみで使う）</button>
+  </div>
+</div>
+
 <div class="toast" id="toast"></div>
 
 <script>
@@ -294,7 +344,77 @@ function load(){
   return migrateV1({items:SEED.items, cards:SEED.cards});
 }
 function fixItem(it){ if(!PRIOS.includes(it.priority)) it.priority="順次"; if(it.ledger===undefined) it.ledger=null; }
-function persist(){ try{ localStorage.setItem(LS_KEY, JSON.stringify(state)); return true; }catch(e){ toast("保存容量オーバー：画像を減らすか「書き出し」でバックアップしてください"); return false; } }
+function persist(){
+  try{ localStorage.setItem(LS_KEY, JSON.stringify(state)); }
+  catch(e){ toast("保存容量オーバー：画像を減らすか「書き出し」でバックアップしてください"); return false; }
+  if(conn.url && conn.token && !syncing) schedulePush();
+  return true;
+}
+
+/* ============ 共有（Googleスプレッドシート）同期 ============ */
+const CONN_KEY = "shohin-conn";
+let conn = loadConn();
+let baseVersion = 0;      // 最後にサーバーと同期した版
+let syncing = false;      // サーバー読込中フラグ（この間はpushしない）
+let pushTimer = null;
+function loadConn(){ try{ return JSON.parse(localStorage.getItem(CONN_KEY))||{url:"",token:""}; }catch(e){ return {url:"",token:""}; } }
+function saveConn(){ try{ localStorage.setItem(CONN_KEY, JSON.stringify(conn)); }catch(e){} }
+const isConnected = ()=> !!(conn.url && conn.token);
+
+async function serverCall(payload){
+  // text/plain で送りCORSプリフライトを回避（Apps Scriptの定番手法）
+  const res = await fetch(conn.url, { method:"POST", body: JSON.stringify(Object.assign({token:conn.token}, payload)) });
+  const txt = await res.text();
+  let j; try{ j = JSON.parse(txt); }catch(e){ throw new Error("応答が不正です（URLを確認してください）"); }
+  return j;
+}
+function setPill(kind, text){
+  const p = $("#syncPill"); if(!p) return;
+  p.className = "syncpill" + (kind?(" "+kind):"");
+  p.textContent = text;
+  p.classList.remove("hide");
+}
+function refreshPill(){
+  if(!isConnected()){ setPill("", "未接続（この端末のみ）"); return; }
+  setPill("on", "共有中");
+}
+
+async function loadFromServer(silent){
+  if(!isConnected()) return false;
+  syncing = true; setPill("busy","読み込み中…");
+  try{
+    const j = await serverCall({action:"load"});
+    if(!j.ok) throw new Error(j.error==="token"?"合言葉が違います":("サーバーエラー: "+j.error));
+    if(j.data){ const parsed = JSON.parse(j.data); if(parsed && parsed.items){ parsed.items.forEach(fixItem); state = parsed; } }
+    baseVersion = j.version||0;
+    localStorage.setItem(LS_KEY, JSON.stringify(state));
+    buildFilterOptions(); render(); refreshPill();
+    if(!silent) toast("最新データを読み込みました");
+    return true;
+  }catch(e){ setPill("err","同期エラー"); if(!silent) toast("読み込み失敗：" + e.message); return false; }
+  finally{ syncing = false; }
+}
+function schedulePush(){ clearTimeout(pushTimer); pushTimer = setTimeout(pushToServer, 1200); }
+async function pushToServer(){
+  if(!isConnected()) return;
+  setPill("busy","保存中…");
+  try{
+    const j = await serverCall({action:"save", baseVersion, data: JSON.stringify(state)});
+    if(j.ok){ baseVersion = j.version; refreshPill(); }
+    else if(j.error==="conflict"){ setPill("err","要更新"); toast("他の人が先に保存しました。『共有』→『接続して読み込む』で最新を取得してください（この端末の変更は上書きしていません）"); }
+    else if(j.error==="token"){ setPill("err","合言葉エラー"); }
+    else { setPill("err","保存エラー"); }
+  }catch(e){ setPill("err","保存エラー"); }
+}
+
+/* モーダル操作 */
+function openSync(){
+  $("#s_url").value = conn.url; $("#s_token").value = conn.token;
+  $("#s_status").className = "s-status"; $("#s_status").textContent = isConnected()? "現在：共有中" : "現在：未接続";
+  $("#mscrim").classList.add("show"); $("#syncModal").classList.add("show"); $("#syncModal").setAttribute("aria-hidden","false");
+}
+function closeSync(){ $("#mscrim").classList.remove("show"); $("#syncModal").classList.remove("show"); $("#syncModal").setAttribute("aria-hidden","true"); }
+function sStatus(kind,msg){ const s=$("#s_status"); s.className="s-status "+(kind||""); s.textContent=msg; }
 
 /* ============ helpers ============ */
 const $ = s=>document.querySelector(s);
@@ -603,9 +723,52 @@ $("#scrim").addEventListener("click",closeDrawer);
 document.addEventListener("keydown",e=>{ if(e.key==="Escape") closeDrawer(); });
 $("#btnTheme").addEventListener("click",()=>{ const cur=document.documentElement.getAttribute("data-theme"); document.documentElement.setAttribute("data-theme", cur==="dark"?"light":"dark"); });
 
-$("#footnote").innerHTML=`元データ：Googleスプレッドシート「商品開発」から移行。<b>優先度</b>＝ボードの列（最優先／なる早／順次／保留中）、<b>進捗</b>＝作業状態（進行前→進行中→結果待ち）、<b>結果</b>＝最終判断（完成／採用(台帳待ち)／見送り／没）。作業中ボードはカードをドラッグで列移動できます。編集内容はこのブラウザに自動保存され、共有・バックアップは「書き出し」→別環境で「読み込み」。`;
+/* 共有モーダルの配線 */
+$("#btnSync").addEventListener("click",openSync);
+$("#syncPill").addEventListener("click",()=>{ if(isConnected()) loadFromServer(); else openSync(); });
+$("#mClose").addEventListener("click",closeSync);
+$("#mscrim").addEventListener("click",closeSync);
+$("#s_test").addEventListener("click",async()=>{
+  const u=$("#s_url").value.trim(), t=$("#s_token").value.trim();
+  if(!u||!t){ sStatus("err","URLと合言葉を入力してください"); return; }
+  sStatus("busy","接続テスト中…");
+  const save={...conn}; conn={url:u,token:t};
+  try{ const j=await serverCall({action:"load"}); if(j.ok) sStatus("ok","接続OK（サーバーの版: "+(j.version||0)+"）"); else sStatus("err", j.error==="token"?"合言葉が違います":("エラー: "+j.error)); }
+  catch(e){ sStatus("err","接続できません："+e.message); }
+  finally{ conn=save; }
+});
+$("#s_connect").addEventListener("click",async()=>{
+  const u=$("#s_url").value.trim(), t=$("#s_token").value.trim();
+  if(!u||!t){ sStatus("err","URLと合言葉を入力してください"); return; }
+  conn={url:u,token:t}; saveConn();
+  sStatus("busy","読み込み中…");
+  const ok=await loadFromServer(true);
+  if(ok){ sStatus("ok","接続しました。全員のデータを表示しています"); refreshPill(); setTimeout(closeSync,700); }
+  else { sStatus("err","読み込めませんでした。URLと合言葉を確認してください"); }
+});
+$("#s_push").addEventListener("click",async()=>{
+  const u=$("#s_url").value.trim(), t=$("#s_token").value.trim();
+  if(!u||!t){ sStatus("err","URLと合言葉を入力してください"); return; }
+  if(!confirm("このブラウザの現在のデータで、サーバー側を上書きします。よろしいですか？")) return;
+  conn={url:u,token:t}; saveConn();
+  sStatus("busy","アップロード中…");
+  try{
+    const cur=await serverCall({action:"load"}); baseVersion=cur.ok?(cur.version||0):0;
+    const j=await serverCall({action:"save", baseVersion, data: JSON.stringify(state)});
+    if(j.ok){ baseVersion=j.version; refreshPill(); sStatus("ok","サーバーへ保存しました。他の人は『接続して読み込む』で表示できます"); }
+    else sStatus("err","保存できませんでした："+j.error);
+  }catch(e){ sStatus("err","保存できません："+e.message); }
+});
+$("#s_disconnect").addEventListener("click",()=>{
+  conn={url:"",token:""}; saveConn(); baseVersion=0; refreshPill();
+  sStatus("","共有を解除しました（この端末のデータのみ表示します）");
+});
+window.addEventListener("focus",()=>{ if(isConnected() && !syncing) loadFromServer(true); });
+
+$("#footnote").innerHTML=`元データ：Googleスプレッドシート「商品開発」から移行。<b>優先度</b>＝ボードの列（最優先／なる早／順次／保留中）、<b>進捗</b>＝作業状態（進行前→進行中→結果待ち）、<b>結果</b>＝最終判断（完成／採用(台帳待ち)／見送り／没）。作業中ボードはカードをドラッグで列移動できます。<b>「共有」ボタン</b>でGoogleスプレッドシートに接続すると、全員が同じデータを読み書きできます（未接続時はこの端末のみに保存）。`;
 
 buildFilterOptions();
 render();
-persist();
+refreshPill();
+if(isConnected()){ loadFromServer(true); } else { persist(); }
 </script>
