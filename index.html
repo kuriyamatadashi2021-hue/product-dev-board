@@ -259,6 +259,9 @@
     <p class="mlead"><b>管理者の方へ（初回セットアップ）：</b> このブラウザの現在のデータをサーバーへ最初に保存します。以後は全員の編集が自動で同期されます。</p>
     <button class="btn warn-btn" id="s_push">このブラウザのデータをサーバーへ保存（初回アップロード）</button>
     <div class="mdiv"></div>
+    <p class="mlead"><b>みんな用リンク（アカウント不要）：</b> このリンクをスタッフに配ると、開くだけで自動接続します（合言葉の入力も不要）。接続してから生成してください。</p>
+    <div class="mrow"><input id="s_link" readonly placeholder="接続すると自動で生成されます" style="flex:1"><button class="btn primary" id="s_copy">リンクをコピー</button></div>
+    <div class="mdiv"></div>
     <button class="btn ghost" id="s_disconnect">共有を解除（この端末のみで使う）</button>
   </div>
 </div>
@@ -360,6 +363,8 @@ let pushTimer = null;
 function loadConn(){ try{ return JSON.parse(localStorage.getItem(CONN_KEY))||{url:"",token:""}; }catch(e){ return {url:"",token:""}; } }
 function saveConn(){ try{ localStorage.setItem(CONN_KEY, JSON.stringify(conn)); }catch(e){} }
 const isConnected = ()=> !!(conn.url && conn.token);
+function buildShareLink(){ if(!isConnected()) return ""; var p=btoa(unescape(encodeURIComponent(JSON.stringify({u:conn.url,t:conn.token})))); return location.origin+location.pathname+"#c="+encodeURIComponent(p); }
+function applyShareHash(){ var m=(location.hash||"").match(/[#&]c=([^&]+)/); if(!m) return false; try{ var o=JSON.parse(decodeURIComponent(escape(atob(decodeURIComponent(m[1]))))); if(o&&o.u&&o.t){ conn={url:o.u,token:o.t}; saveConn(); history.replaceState(null,"",location.pathname+location.search); return true; } }catch(e){} return false; }
 
 async function serverCall(payload){
   // text/plain で送りCORSプリフライトを回避（Apps Scriptの定番手法）
@@ -409,7 +414,7 @@ async function pushToServer(){
 
 /* モーダル操作 */
 function openSync(){
-  $("#s_url").value = conn.url; $("#s_token").value = conn.token;
+  $("#s_url").value = conn.url; $("#s_token").value = conn.token; if($("#s_link")) $("#s_link").value = buildShareLink();
   $("#s_status").className = "s-status"; $("#s_status").textContent = isConnected()? "現在：共有中" : "現在：未接続";
   $("#mscrim").classList.add("show"); $("#syncModal").classList.add("show"); $("#syncModal").setAttribute("aria-hidden","false");
 }
@@ -759,6 +764,7 @@ $("#s_push").addEventListener("click",async()=>{
     else sStatus("err","保存できませんでした："+j.error);
   }catch(e){ sStatus("err","保存できません："+e.message); }
 });
+$("#s_copy").addEventListener("click",()=>{ var link=buildShareLink(); if(!link){ sStatus("err","先に接続してください（URL・合言葉を入力→接続）"); return; } $("#s_link").value=link; if(navigator.clipboard&&navigator.clipboard.writeText){ navigator.clipboard.writeText(link).then(function(){sStatus("ok","みんな用リンクをコピーしました");},function(){ $("#s_link").select(); sStatus("ok","リンクを生成しました（選択してコピー）"); }); } else { $("#s_link").select(); sStatus("ok","リンクを生成しました（選択してコピー）"); } });
 $("#s_disconnect").addEventListener("click",()=>{
   conn={url:"",token:""}; saveConn(); baseVersion=0; refreshPill();
   sStatus("","共有を解除しました（この端末のデータのみ表示します）");
@@ -770,5 +776,5 @@ $("#footnote").innerHTML=`元データ：Googleスプレッドシート「商品
 buildFilterOptions();
 render();
 refreshPill();
-if(isConnected()){ loadFromServer(true); } else { persist(); }
+applyShareHash(); refreshPill(); if(isConnected()){ loadFromServer(true); } else { persist(); }
 </script>
